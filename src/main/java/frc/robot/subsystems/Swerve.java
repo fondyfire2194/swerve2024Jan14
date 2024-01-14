@@ -38,11 +38,13 @@ public class Swerve extends SubsystemBase {
           new SwerveModule(2, Constants.Swerve.Mod2.constants),
           new SwerveModule(3, Constants.Swerve.Mod3.constants)
         };
+    
 
     swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getYaw(), getPositions());
 
     field = new Field2d();
     SmartDashboard.putData("Field", field);
+    resetModuleEncoders();
   }
 
   public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
@@ -58,6 +60,7 @@ public class Swerve extends SubsystemBase {
       mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
     }
     SmartDashboard.putNumber("DRIVE",translation.getX());
+    
   }
 
   /* Used by SwerveControllerCommand in Auto */
@@ -67,6 +70,13 @@ public class Swerve extends SubsystemBase {
     for (SwerveModule mod : mSwerveMods) {
       mod.setDesiredState(desiredStates[mod.moduleNumber], false);
     }
+  }
+
+  public void resetModuleEncoders() {
+    mSwerveMods[0].resetAngleToAbsolute();
+    mSwerveMods[1].resetAngleToAbsolute();
+    mSwerveMods[2].resetAngleToAbsolute();
+    mSwerveMods[3].resetAngleToAbsolute();
   }
 
   public Pose2d getPose() {
