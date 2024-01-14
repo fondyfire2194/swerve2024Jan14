@@ -103,16 +103,18 @@ public class SwerveModule extends SubsystemBase {
     driveMotor.setIdleMode(Constants.Swerve.driveNeutralMode);
     driveEncoder.setVelocityConversionFactor(Constants.Swerve.driveConversionVelocityFactor);
     driveEncoder.setPositionConversionFactor(Constants.Swerve.driveConversionPositionFactor);
-    driveController.setP(Constants.Swerve.angleKP);
-    driveController.setI(Constants.Swerve.angleKI);
-    driveController.setD(Constants.Swerve.angleKD);
-    driveController.setFF(Constants.Swerve.angleKFF);
+    driveController.setP(Constants.Swerve.driveKP);
+    driveController.setI(Constants.Swerve.driveKI);
+    driveController.setD(Constants.Swerve.driveKD);
+    driveController.setFF(Constants.Swerve.driveKFF);
     driveMotor.enableVoltageCompensation(Constants.Swerve.voltageComp);
     driveMotor.burnFlash();
     driveEncoder.setPosition(0.0);
   }
 
   private void setSpeed(SwerveModuleState desiredState, boolean isOpenLoop) {
+
+    SmartDashboard.putNumber(String.valueOf(moduleNumber) + "SPD", desiredState.speedMetersPerSecond);
     if (isOpenLoop) {
       double percentOutput = desiredState.speedMetersPerSecond / Constants.Swerve.maxSpeed;
       driveMotor.set(percentOutput);
@@ -156,6 +158,6 @@ public class SwerveModule extends SubsystemBase {
         SmartDashboard.putNumber(String.valueOf(moduleNumber) + " cancoderAbs",
         m_turnCancoder.getAbsolutePosition().getValueAsDouble());
 
-    SmartDashboard.putNumber("PCF", Constants.Swerve.driveConversionPositionFactor);
+    
   }
 }

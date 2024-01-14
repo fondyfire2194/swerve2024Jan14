@@ -76,8 +76,8 @@ public final class Constants {
     public static final double maxAngularVelocity = 5.0;
 
     /* Neutral Modes */
-    public static final IdleMode angleNeutralMode = IdleMode.kCoast;
-    public static final IdleMode driveNeutralMode = IdleMode.kCoast;
+    public static final IdleMode angleNeutralMode = IdleMode.kBrake;
+    public static final IdleMode driveNeutralMode = IdleMode.kBrake;
 
     /* Motor Inverts */
     public static final boolean driveInvert = false;
