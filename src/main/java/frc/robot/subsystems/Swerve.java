@@ -2,14 +2,16 @@ package frc.robot.subsystems;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -21,7 +23,7 @@ public class Swerve extends SubsystemBase {
 
    private final AHRS gyro;
 
-  private SwerveDriveOdometry swerveOdometry;
+  private SwerveDrivePoseEstimator swervePoseEstimator;
   
   private SwerveModule[] mSwerveMods;
 
@@ -40,7 +42,9 @@ public class Swerve extends SubsystemBase {
         };
     
 
-    swerveOdometry = new SwerveDriveOdometry(Constants.Swerve.swerveKinematics, getYaw(), getPositions());
+      swervePoseEstimator = new SwerveDrivePoseEstimator(Constants.Swerve.swerveKinematics, getYaw(), getPositions(), new Pose2d(),
+      VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+      VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
 
     field = new Field2d();
     SmartDashboard.putData("Field", field);
@@ -80,11 +84,11 @@ public class Swerve extends SubsystemBase {
   }
 
   public Pose2d getPose() {
-    return swerveOdometry.getPoseMeters();
+    return swervePoseEstimator.getEstimatedPosition();
   }
 
-  public void resetOdometry(Pose2d pose) {
-    swerveOdometry.resetPosition(getYaw(), getPositions(), pose);
+  public void resetPoseEstimator(Pose2d pose) {
+    swervePoseEstimator.resetPosition(getYaw(), getPositions(), pose);
   }
 
   public SwerveModulePosition[] getPositions() {
@@ -103,10 +107,16 @@ public class Swerve extends SubsystemBase {
     return (Constants.Swerve.invertGyro) ? Rotation2d.fromDegrees(360 - gyro.getYaw()) : Rotation2d.fromDegrees(gyro.getYaw());
   }
 
+  public double getHeadingDegrees() {
+    return -Math.IEEEremainder((gyro.getAngle()), 360);
+  }
+
   @Override
   public void periodic() {
-    swerveOdometry.update(getYaw(), getPositions());
+    swervePoseEstimator.update(getYaw(), getPositions());
     field.setRobotPose(getPose());
-    SmartDashboard.putNumber("Yaw", getYaw().getDegrees());
+    SmartDashboard.putNumber("X Meters", swervePoseEstimator.getEstimatedPosition().getX());
+    SmartDashboard.putNumber("Y Meters", swervePoseEstimator.getEstimatedPosition().getY());
+    SmartDashboard.putNumber("Yaw",getHeadingDegrees());
   }
 }

@@ -16,12 +16,11 @@ public final class Constants {
   public static final class Swerve {
     public static final double stickDeadband = 0.1;
 
-    public static final int pigeonID = 6;
-    public static final boolean invertGyro = false; // Always ensure Gyro is CCW+ CW-
+    public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
     /* Drivetrain Constants */
-    public static final Measure<Distance> trackWidth = Inches.of(20.75);
-    public static final Measure<Distance> wheelBase = Inches.of(20.75);
+    public static final Measure<Distance> trackWidth = Inches.of(22.125);
+    public static final Measure<Distance> wheelBase = Inches.of(27.25);
     public static final Measure<Distance> wheelDiameter = Meters.of(Meters.convertFrom(4.0, Inches));
     public static final Measure<Distance> wheelCircumference = Meters.of(wheelDiameter.magnitude() * Math.PI);
 
@@ -49,6 +48,10 @@ public final class Constants {
     public static final int angleContinuousCurrentLimit = 20;
     public static final int driveContinuousCurrentLimit = 30;
 
+    /* Swerve Profiling Values */
+    public static final double maxSpeed = 3.25; // meters per second
+    public static final double maxAngularVelocity = 2.0;
+
     /* Angle Motor PID Values */
     public static final double angleKP = 0.01;
     public static final double angleKI = 0.0;
@@ -59,21 +62,17 @@ public final class Constants {
     public static final double driveKP = 0.1;
     public static final double driveKI = 0.0;
     public static final double driveKD = 0.0;
-    public static final double driveKFF = 0.0;
+    public static final double driveKFF = .9 / maxSpeed;//90% feed forward
 
     /* Drive Motor Characterization Values */
     public static final double driveKS = 0.667;
-    public static final double driveKV = 2.44;
+    public static final double driveKV = 3.04;
     public static final double driveKA = 0.27;
 
     /* Drive Motor Conversion Factors */
     public static final double driveConversionPositionFactor = (wheelDiameter.magnitude() * Math.PI) / driveGearRatio;
     public static final double driveConversionVelocityFactor = driveConversionPositionFactor / 60.0;
     public static final double angleConversionFactor = 360.0 / angleGearRatio;
-
-    /* Swerve Profiling Values */
-    public static final double maxSpeed = 4.5; // meters per second
-    public static final double maxAngularVelocity = 5.0;
 
     /* Neutral Modes */
     public static final IdleMode angleNeutralMode = IdleMode.kBrake;
@@ -136,7 +135,7 @@ public final class Constants {
 
     public static final double kPXController = 1;
     public static final double kPYController = 1;
-    public static final double kPThetaController = 1;
+    public static final double kPThetaController = 0.05;
 
     // Constraint for the motion profilied robot angle controller
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(

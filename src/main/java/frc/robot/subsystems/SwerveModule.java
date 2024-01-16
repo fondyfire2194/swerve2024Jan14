@@ -9,13 +9,11 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
-
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.config.SwerveModuleConstants;
 import frc.lib.math.OnboardModuleState;
@@ -39,8 +37,6 @@ public class SwerveModule extends SubsystemBase {
   private final SparkPIDController driveController;
   private final SparkPIDController angleController;
 
-  private final SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(
-      Constants.Swerve.driveKS, Constants.Swerve.driveKV, Constants.Swerve.driveKA);
 
   public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants) {
     this.moduleNumber = moduleNumber;
@@ -78,7 +74,7 @@ public class SwerveModule extends SubsystemBase {
   }
 
   public void resetAngleToAbsolute() {
-    double angle = (m_turnCancoder.getAbsolutePosition().getValueAsDouble()*360 - angleOffset.getDegrees());
+    double angle = (m_turnCancoder.getAbsolutePosition().getValueAsDouble() * 360 - angleOffset.getDegrees());
     integratedAngleEncoder.setPosition(angle);
     SmartDashboard.putNumber("Set angle" + String.valueOf(moduleNumber), angle);
   }
@@ -95,17 +91,17 @@ public class SwerveModule extends SubsystemBase {
     angleController.setD(Constants.Swerve.angleKD);
     angleController.setFF(Constants.Swerve.angleKFF);
 
-    //******************************************************** */
+    // ******************************************************** */
 
     angleController.setPositionPIDWrappingEnabled(true);
-    angleController.setPositionPIDWrappingMinInput(-180);    
+    angleController.setPositionPIDWrappingMinInput(-180);
     angleController.setPositionPIDWrappingMaxInput(180);
 
-    //******************************************************** */
+    // ******************************************************** */
 
     angleMotor.enableVoltageCompensation(Constants.Swerve.voltageComp);
     angleMotor.burnFlash();
-    
+
   }
 
   private void configDriveMotor() {
@@ -130,13 +126,12 @@ public class SwerveModule extends SubsystemBase {
     SmartDashboard.putNumber(String.valueOf(moduleNumber) + "SPD", desiredState.speedMetersPerSecond);
     if (isOpenLoop) {
       double percentOutput = desiredState.speedMetersPerSecond / Constants.Swerve.maxSpeed;
-      driveMotor.set(percentOutput);
+      driveMotor.setVoltage(percentOutput * RobotController.getBatteryVoltage());
     } else {
       driveController.setReference(
           desiredState.speedMetersPerSecond,
           CANSparkBase.ControlType.kVelocity,
-          0,
-          feedforward.calculate(desiredState.speedMetersPerSecond));
+          0);
     }
   }
 
@@ -154,12 +149,9 @@ public class SwerveModule extends SubsystemBase {
     return Rotation2d.fromDegrees(integratedAngleEncoder.getPosition());
   }
 
-  // public Rotation2d getEncoder() {
-  // return Rotation2d.fromDegrees(angleEncoder.getPosition() * 360);
-  // }
 
   public SwerveModulePosition getState() {
-    return new SwerveModulePosition(driveEncoder.getVelocity(), getAngle());
+    return new SwerveModulePosition(driveEncoder.getPosition(), getAngle());
   }
 
   @Override
@@ -168,9 +160,8 @@ public class SwerveModule extends SubsystemBase {
     SmartDashboard.putNumber(String.valueOf(moduleNumber) + " distance", driveEncoder.getPosition());
     SmartDashboard.putNumber(String.valueOf(moduleNumber) + " cancoder",
         m_turnCancoder.getPosition().getValueAsDouble());
-        SmartDashboard.putNumber(String.valueOf(moduleNumber) + " cancoderAbs",
+    SmartDashboard.putNumber(String.valueOf(moduleNumber) + " cancoderAbs",
         m_turnCancoder.getAbsolutePosition().getValueAsDouble());
 
-    
   }
 }
