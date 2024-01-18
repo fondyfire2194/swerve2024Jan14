@@ -37,6 +37,7 @@ public class SwerveModule extends SubsystemBase {
   private final SparkPIDController driveController;
   private final SparkPIDController angleController;
 
+  private SwerveModuleState currentDesiredState = new SwerveModuleState();
 
   public SwerveModule(int moduleNumber, SwerveModuleConstants moduleConstants) {
     this.moduleNumber = moduleNumber;
@@ -68,15 +69,19 @@ public class SwerveModule extends SubsystemBase {
     // controller which
     // REV and CTRE are not
     desiredState = OnboardModuleState.optimize(desiredState, getState().angle);
-
+    currentDesiredState = desiredState;
     setAngle(desiredState);
     setSpeed(desiredState, isOpenLoop);
   }
 
+  public SwerveModuleState getDesiredState(){
+    return currentDesiredState;
+  }
+
   public void resetAngleToAbsolute() {
-    double angle = (m_turnCancoder.getAbsolutePosition().getValueAsDouble() * 360 - angleOffset.getDegrees());
+    double angle = ((m_turnCancoder.getAbsolutePosition().getValueAsDouble() * 360) - angleOffset.getDegrees());
     integratedAngleEncoder.setPosition(angle);
-    SmartDashboard.putNumber("Set angle" + String.valueOf(moduleNumber), angle);
+
   }
 
   private void configAngleMotor() {
@@ -123,7 +128,7 @@ public class SwerveModule extends SubsystemBase {
 
   private void setSpeed(SwerveModuleState desiredState, boolean isOpenLoop) {
 
-    SmartDashboard.putNumber(String.valueOf(moduleNumber) + "SPD", desiredState.speedMetersPerSecond);
+    SmartDashboard.putNumber(Constants.Swerve.modNames[moduleNumber] + "Set Speed", desiredState.speedMetersPerSecond);
     if (isOpenLoop) {
       double percentOutput = desiredState.speedMetersPerSecond / Constants.Swerve.maxSpeed;
       driveMotor.setVoltage(percentOutput * RobotController.getBatteryVoltage());
@@ -149,19 +154,33 @@ public class SwerveModule extends SubsystemBase {
     return Rotation2d.fromDegrees(integratedAngleEncoder.getPosition());
   }
 
-
-  public SwerveModulePosition getState() {
+  public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(driveEncoder.getPosition(), getAngle());
+  }
+
+  public SwerveModuleState getState() {
+    return new SwerveModuleState(driveEncoder.getVelocity(), getAngle());
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber(String.valueOf(moduleNumber) + " angle", getAngle().getDegrees());
-    SmartDashboard.putNumber(String.valueOf(moduleNumber) + " distance", driveEncoder.getPosition());
-    SmartDashboard.putNumber(String.valueOf(moduleNumber) + " cancoder",
-        m_turnCancoder.getPosition().getValueAsDouble());
-    SmartDashboard.putNumber(String.valueOf(moduleNumber) + " cancoderAbs",
-        m_turnCancoder.getAbsolutePosition().getValueAsDouble());
+    SmartDashboard.putNumber(Constants.Swerve.modNames[moduleNumber] + "angle deg",
+        round2dp(getAngle().getDegrees(), 2));
+    SmartDashboard.putNumber(Constants.Swerve.modNames[moduleNumber] + "distance m",
+        round2dp(driveEncoder.getPosition(), 2));
+    SmartDashboard.putNumber(Constants.Swerve.modNames[moduleNumber] + "velocity mps",
+        round2dp(driveEncoder.getVelocity(), 2));
 
+    SmartDashboard.putNumber(Constants.Swerve.modNames[moduleNumber] + "cancoder",
+        round2dp(m_turnCancoder.getPosition().getValueAsDouble(), 2));
+    SmartDashboard.putNumber(Constants.Swerve.modNames[moduleNumber] + "cancoderAbs",
+        round2dp(m_turnCancoder.getAbsolutePosition().getValueAsDouble(), 2));
+
+  }
+
+  public static double round2dp(double number, int dp) {
+    number = Math.round(number * dp);
+    number /= 100;
+    return number;
   }
 }

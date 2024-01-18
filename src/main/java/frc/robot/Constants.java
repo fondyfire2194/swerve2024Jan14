@@ -1,5 +1,8 @@
 package frc.robot;
 
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,9 +17,9 @@ import static edu.wpi.first.units.Units.*;
 public final class Constants {
 
   public static final class Swerve {
+
     public static final double stickDeadband = 0.1;
 
-    
     public static final boolean invertGyro = true; // Always ensure Gyro is CCW+ CW-
 
     /* Drivetrain Constants */
@@ -36,11 +39,17 @@ public final class Constants {
 
     public static double angleGearRatio = mk4iL1TurnGearRatio;
 
+    public static final Translation2d flModuleOffset = new Translation2d(wheelBase.magnitude() / 2.0,
+        trackWidth.magnitude() / 2.0);
+    public static final Translation2d frModuleOffset = new Translation2d(wheelBase.magnitude() / 2.0,
+        -trackWidth.magnitude() / 2.0);
+    public static final Translation2d blModuleOffset = new Translation2d(-wheelBase.magnitude() / 2.0,
+        trackWidth.magnitude() / 2.0);
+    public static final Translation2d brModuleOffset = new Translation2d(-wheelBase.magnitude() / 2.0,
+        -trackWidth.magnitude() / 2.0);
+
     public static final SwerveDriveKinematics swerveKinematics = new SwerveDriveKinematics(
-        new Translation2d(wheelBase.magnitude() / 2.0, trackWidth.magnitude() / 2.0),
-        new Translation2d(wheelBase.magnitude() / 2.0, -trackWidth.magnitude() / 2.0),
-        new Translation2d(-wheelBase.magnitude() / 2.0, trackWidth.magnitude() / 2.0),
-        new Translation2d(-wheelBase.magnitude() / 2.0, -trackWidth.magnitude() / 2.0));
+        flModuleOffset, frModuleOffset, blModuleOffset, brModuleOffset);
 
     /* Swerve Voltage Compensation */
     public static final double voltageComp = 12.0;
@@ -63,7 +72,7 @@ public final class Constants {
     public static final double driveKP = 0.1;
     public static final double driveKI = 0.0;
     public static final double driveKD = 0.0;
-    public static final double driveKFF = .9 / maxSpeed;//90% feed forward
+    public static final double driveKFF = .9 / maxSpeed;// 90% feed forward
 
     /* Drive Motor Characterization Values */
     public static final double driveKS = 0.667;
@@ -85,6 +94,8 @@ public final class Constants {
 
     /* Angle Encoder Invert */
     public static final boolean canCoderInvert = false;
+
+    public static String[] modNames = { "FL ", "FR ", "BL ", "BR " };
 
     /* Module Specific Constants */
     /* Front Left Module - Module 0 */
@@ -126,6 +137,13 @@ public final class Constants {
       public static final SwerveModuleConstants constants = new SwerveModuleConstants(driveMotorID, angleMotorID,
           cancoderID, angleOffset);
     }
+
+    public static final HolonomicPathFollowerConfig pathFollowerConfig = new HolonomicPathFollowerConfig(
+        new PIDConstants(5.0, 0, 0), // Translation constants
+        new PIDConstants(5.0, 0, 0), // Rotation constants
+        maxSpeed,
+        flModuleOffset.getNorm(), // Drive base radius (distance from center to furthest module)
+        new ReplanningConfig());
   }
 
   public static final class AutoConstants {
@@ -142,4 +160,5 @@ public final class Constants {
     public static final TrapezoidProfile.Constraints kThetaControllerConstraints = new TrapezoidProfile.Constraints(
         kMaxAngularSpeedRadiansPerSecond, kMaxAngularSpeedRadiansPerSecondSquared);
   }
+
 }
