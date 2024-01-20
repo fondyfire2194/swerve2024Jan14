@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
 import com.kauailabs.navx.frc.AHRS;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.util.PathPlannerLogging;
@@ -93,18 +94,14 @@ public class Swerve extends SubsystemBase {
 
   public void drive(Translation2d translation, double rotation, boolean fieldRelative, boolean isOpenLoop) {
     SwerveModuleState[] swerveModuleStates = Constants.Swerve.swerveKinematics.toSwerveModuleStates(
-
         fieldRelative
             ? ChassisSpeeds.fromFieldRelativeSpeeds(
                 translation.getX(), translation.getY(), rotation, getYaw())
             : new ChassisSpeeds(translation.getX(), translation.getY(), rotation));
-
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Swerve.maxSpeed);
-
     for (SwerveModule mod : mSwerveMods) {
       mod.setDesiredState(swerveModuleStates[mod.moduleNumber], isOpenLoop);
     }
-
   }
 
   /* Used by SwerveControllerCommand in Auto */
@@ -120,6 +117,10 @@ public class Swerve extends SubsystemBase {
     mSwerveMods[1].resetAngleToAbsolute();
     mSwerveMods[2].resetAngleToAbsolute();
     mSwerveMods[3].resetAngleToAbsolute();
+    mSwerveMods[0].setDesiredState(new SwerveModuleState(),false);
+    mSwerveMods[1].setDesiredState(new SwerveModuleState(),false);
+    mSwerveMods[2].setDesiredState(new SwerveModuleState(),false);
+    mSwerveMods[3].setDesiredState(new SwerveModuleState(),false);
   }
 
   public Pose2d getPose() {
@@ -221,11 +222,7 @@ public class Swerve extends SubsystemBase {
 
   public static double round2dp(double number, int dp) {
     double temp = Math.pow(10, dp);
-    SmartDashboard.putNumber("temp", temp);
-    double temp1 = Math.round(number * temp);
-    SmartDashboard.putNumber("temp1", temp1);
-
-    return temp1 / temp;
+    return Math.round(number * temp) / temp;
   }
 
 }

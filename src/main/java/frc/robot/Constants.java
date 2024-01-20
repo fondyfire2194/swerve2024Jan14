@@ -85,8 +85,8 @@ public final class Constants {
     public static final double angleConversionFactor = 360.0 / angleGearRatio;
 
     /* Neutral Modes */
-    public static final IdleMode angleNeutralMode = IdleMode.kBrake;
-    public static final IdleMode driveNeutralMode = IdleMode.kBrake;
+    public static final IdleMode angleNeutralMode = IdleMode.kCoast;
+    public static final IdleMode driveNeutralMode = IdleMode.kCoast;
 
     /* Motor Inverts */
     public static final boolean driveInvert = false;
